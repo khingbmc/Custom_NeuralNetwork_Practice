@@ -1,4 +1,8 @@
-import neuralModel as Ne
+import neuralModel
+import numpy as np
 def main():
-    NN = Ne.NeuralNetwork(3, 3, 3)
-    NN.feedForward([4, 2, 5])
+    model = neuralModel.NeuralNetwork(8, 2, 2)
+    # model.check()
+    output = model.feedForward(np.array([15.26, 14.84, 0.871, 5.763, 3.312, 2.221, 5.22, 1]))
+    print(output)
+main()

@@ -13,35 +13,37 @@ class NeuralNetwork:
         self.errors = np.array([])
         self.weights_ij = np.random.rand(hiddens, inputs)
         self.weights_jk = np.random.rand(outputs, hiddens)
+        self.weights = [self.weights_ij, self.weights_jk]
 
-    def feedForward(self, inputArray):
-        self.target = inputArray[0]
-        self.inputLayer = inputArray[1:]
-        _hiddenLayer = np.dot(self.weights_ij, self.inputLayer) #output of input layer i
-        self.hiddenLayer = self.sigmoid(_hiddenLayer)
-        print("---------- INPUT -> HIDDEN (ij) ----------")
-        print("SIZE")
-        print(self.weights_ij.size)
-        print("Array of Weight IJ")
+    def feedForward(self, row):
+        inputs = row
+        new_inputs = []
+        for layer in self.weights:
+            activation = []
+            for neuron in layer:
+                print("=================")
+                print(neuron)
+                activation.append(self.activate(neuron, inputs))
+            new_inputs = self.sigmoid(activation)
+            print(">>>>>>>>>>>>>>")
+            print(new_inputs)
+            print(activation)
+            inputs = new_inputs
+        return inputs
+
+    def activate(self, weight, inputs):
+        activation = inputs * weight
+        return sum(activation)
+
+
+    def check(self):
         print(self.weights_ij)
-        print("DOT")
-        print(self.inputLayer)
-        print("EQUALS (Input of HiddenLayer)")
-        print(self.hiddenLayer)
-        
-        _outputLayer = np.dot(self.weights_jk, self.hiddenLayer)
-        self.outputLayer = self.sigmoid(_outputLayer)
-        print("---------- HIDDEN -> OUTPUT (jk) ----------")
-        print("Array of Weight JK")
         print(self.weights_jk)
-        print("DOT")
-        print(self.hiddenLayer)
-        print("EQUALS (Input of OutputLayer)")
-        print(self.outputLayer)
+        return 0
 
     def sigmoid(self, array):
-        outArray = np.zeros(array.size)
-        for i in range(array.size):
+        outArray = np.zeros(len(array))
+        for i in range(len(array)):
             outArray[i] = (1/(1+np.exp(-array[i])))
         return outArray
 
