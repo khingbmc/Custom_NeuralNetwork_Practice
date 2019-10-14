@@ -1,50 +1,70 @@
 import numpy as np
 import pandas as pd
+from random import random
+import math
 
 class NeuralNetwork:
     def __init__(self, inputs, hiddens, outputs):
         self.n_input = inputs
         self.n_hidden = hiddens
         self.n_output = outputs
-        self.inputLayer = np.zeros(inputs) #init neurons in inputLayer
-        self.hiddenLayer = np.zeros(hiddens) #init neurons in hiddenLayer
-        self.outputLayer = np.zeros(outputs) #init neurons in outputLayer
-        self.target = ''
-        self.errors = np.array([])
-        self.weights_ij = np.random.rand(hiddens, inputs)
-        self.weights_jk = np.random.rand(outputs, hiddens)
-        self.weights = [self.weights_ij, self.weights_jk]
+        self.network = []
+        hidden_layer = [{'weights':[random() for i in range(self.n_input)]} for i in range(self.n_hidden)] #random from num of inputlayer and hiddenlayer (input * hidden)
+        self.network.append(hidden_layer)
+        output_layer = [{'weights':[random() for i in range(self.n_hidden)]} for i in range(self.n_output)]
+        self.network.append(output_layer)
+        self.inputs = []
 
-    def feedForward(self, row):
-        inputs = row
-        new_inputs = []
-        for layer in self.weights:
-            activation = []
+    def compute_net_input(self, weight, input):
+        net_input = 0
+        for i in range(len(weight)):
+            net_input += weight[i]*input[i]
+        return net_input
+
+    def sigmoid(self, net_input):
+        return 1.0/(1.0 + math.exp(-net_input))
+
+    def forward_propagate(self, data):
+        self.inputs = data
+        for layer in self.network:
+            next_inputs = []
             for neuron in layer:
-                print("=================")
-                print(neuron)
-                activation.append(self.activate(neuron, inputs))
-            new_inputs = self.sigmoid(activation)
-            print(">>>>>>>>>>>>>>")
-            print(new_inputs)
-            print(activation)
-            inputs = new_inputs
-        return inputs
+                net_input = self.compute_net_input(neuron['weights'], data)
+                neuron['output'] = self.sigmoid(net_input)
+                next_inputs.append(neuron['output'])
+            self.inputs = next_inputs
 
-    def activate(self, weight, inputs):
-        activation = inputs * weight
-        return sum(activation)
+    #BackPropagation
+    def transfer_derivative(self, output):
+        return output * (1.0 - output)
 
-
-    def check(self):
-        print(self.weights_ij)
-        print(self.weights_jk)
-        return 0
-
-    def sigmoid(self, array):
-        outArray = np.zeros(len(array))
-        for i in range(len(array)):
-            outArray[i] = (1/(1+np.exp(-array[i])))
-        return outArray
-
+    def back_propagate(self, expected):
+        #backprop is begin in outputLayer
+        for i in reversed(range(len(self.network))):
+            layer = self.network[i]
+            errors = []
+            if i != len(self.network) - 1: #Hidden Layer
+                for j in range(len(layer)):
+                    error = 0.0
+                    for neuron in self.network[i + 1]:
+                        error += neuron['weights'][j] * neuron['errors']
+                    errors.append(error)
+            else:
+                for j in range(len(layer)):
+                    neuron = layer[j]
+                    errors.append(expected[j] - neuron['output'])
+            for j in range(len(layer)):
+                neuron = layer[j]
+                neuron['errors'] = errors[j] * self.transfer_derivative(neuron['output'])
+            
     
+
+network = NeuralNetwork(2, 1, 2)
+for layer in network.network:
+    print(layer)
+network.forward_propagate([1, 0])
+print(network.inputs)
+print(network.network)
+print('=========')
+network.back_propagate([0, 1])
+print(network.network)
