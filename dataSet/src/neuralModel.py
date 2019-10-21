@@ -17,6 +17,7 @@ class NeuralNetwork:
         self.network.append(output_layer)
         self.inputs = []
         self.data = []
+        self.best_network = []
 
     def compute_net_input(self, weight, input):
         net_input = 0
@@ -33,7 +34,7 @@ class NeuralNetwork:
         for layer in self.network:
             next_inputs = []
             for neuron in layer:
-                net_input = self.compute_net_input(neuron['weights'], data)
+                net_input = self.compute_net_input(neuron['weights'], self.inputs)
                 neuron['output'] = self.sigmoid(net_input)
                 next_inputs.append(neuron['output'])
             self.inputs = next_inputs
@@ -79,12 +80,17 @@ class NeuralNetwork:
                 self.forward_propagate(row)
                 expected = [0 for i in range(num_output)]
                 expected[row[-1]] = 1
+                # print("this is expect ", expected)
                 sum_error += sum([(expected[i] - self.inputs[i])**2 for i in range(len(expected))])
                 self.back_propagate(expected)
                 self.update_weights(learn_rate)
             print('iteration=%d   learning_rate=%.4f   error=%.4f' % (iterate, learn_rate, sum_error))
 
-            
+    def predict(self, row):
+        self.forward_propagate(row)
+        print(self.inputs)
+        return self.inputs.index(max(self.inputs))
+    
 
 
 dataset = [[2.7810836,2.550537003,0],
@@ -97,12 +103,29 @@ dataset = [[2.7810836,2.550537003,0],
 	[6.922596716,1.77106367,1],
 	[8.675418651,-0.242068655,1],
 	[7.673756466,3.508563011,1]]
+
+data = pd.read_csv("../wdbc.csv", index_col=0)
+ID = data.index.values
+data_key = []
+for j in ID:
+    format_data = []
+    for i in data:
+        format_data.append(data[i][j])
+    data_key.append(format_data)
+
+print(data_key)
+
+
 num_inputs = len(dataset[0]) -1 
 num_outputs = len(set([row[-1] for row in dataset]))
-
+print(num_outputs)
 seed(1)
 network = NeuralNetwork(num_inputs, 2, num_outputs)
-network.training(dataset, 0.01, 1000, num_outputs)
+network.training(dataset, 0.5, 20, num_outputs)
 print("\n\nModel")
 print(network.network)
+
+for row in dataset:
+    prediction = network.predict(row)
+    print("Expect=%d  Output=%d" % (row[-1], prediction))
 
