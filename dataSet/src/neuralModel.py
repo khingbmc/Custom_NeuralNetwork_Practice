@@ -81,9 +81,12 @@ class NeuralNetwork:
                 expected = [0 for i in range(num_output)]
                 expected[row[-1]] = 1
                 # print("this is expect ", expected)
+
                 sum_error += sum([(expected[i] - self.inputs[i])**2 for i in range(len(expected))])
+                
                 self.back_propagate(expected)
                 self.update_weights(learn_rate)
+           
             print('iteration=%d   learning_rate=%.4f   error=%.4f' % (iterate, learn_rate, sum_error))
 
     def predict(self, row):
@@ -91,7 +94,7 @@ class NeuralNetwork:
         print(self.inputs)
         return self.inputs.index(max(self.inputs))
     
-
+normalized = lambda x, maxv, minv : (x-minv*0.95)/(maxv*1.05-minv*0.95)
 
 dataset = [[2.7810836,2.550537003,0],
 	[1.465489372,2.362125076,0],
@@ -105,6 +108,16 @@ dataset = [[2.7810836,2.550537003,0],
 	[7.673756466,3.508563011,1]]
 
 data = pd.read_csv("../wdbc.csv", index_col=0)
+num = 0
+max_val, min_val = [0 for i in range(30)], [0 for i in range(30)]
+for i in data:
+    if(i != 'class'):
+        if(num == 30):
+            break
+        max_val[num] = max(data[i])
+        min_val[num] = min(data[i])
+        num += 1
+
 ID = data.index.values
 data_key = []
 for j in ID:
@@ -113,19 +126,44 @@ for j in ID:
         format_data.append(data[i][j])
     data_key.append(format_data)
 
-print(data_key)
+num_inputs = len(data_key[0]) 
+num_outputs = len(set([row[-1] for row in data_key]))
+print(num_inputs)
 
 
-num_inputs = len(dataset[0]) -1 
-num_outputs = len(set([row[-1] for row in dataset]))
-print(num_outputs)
-seed(1)
-network = NeuralNetwork(num_inputs, 2, num_outputs)
-network.training(dataset, 0.5, 20, num_outputs)
+
+
+
+for i in range(len(data_key)):
+    class_val = data_key[i][0]
+    del data_key[i][0]
+    data_key[i].append(1 if class_val == 'M' else 0)
+
+print(data_key[0])
+# print(max_val)
+# print(min_val[0])
+
+for i in range(len(data_key)-1):
+    for j in range(len(max_val)):
+        
+        data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
+print("After Normalized")
+print(data_key[0])
+
+
+num_inputs = len(data_key[0]) 
+num_outputs = len(set([row[-1] for row in data_key]))
+# print(num_inputs)
+# print(num_outputs)
+# seed(1)
+network = NeuralNetwork(num_inputs, 3, num_outputs)
+network.training(data_key, 0.5, 5000, num_outputs)
 print("\n\nModel")
 print(network.network)
 
-for row in dataset:
+for row in data_key:
     prediction = network.predict(row)
     print("Expect=%d  Output=%d" % (row[-1], prediction))
 
+# B   M
+#[_   _]
