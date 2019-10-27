@@ -96,23 +96,25 @@ class NeuralNetwork:
     
 normalized = lambda x, maxv, minv : (x-minv*0.95)/(maxv*1.05-minv*0.95)
 
-dataset = [[2.7810836,2.550537003,0],
-	[1.465489372,2.362125076,0],
-	[3.396561688,4.400293529,0],
-	[1.38807019,1.850220317,0],
-	[3.06407232,3.005305973,0],
-	[7.627531214,2.759262235,1],
-	[5.332441248,2.088626775,1],
-	[6.922596716,1.77106367,1],
-	[8.675418651,-0.242068655,1],
-	[7.673756466,3.508563011,1]]
+# dataset = [[2.7810836,2.550537003,0],
+# 	[1.465489372,2.362125076,0],
+# 	[3.396561688,4.400293529,0],
+# 	[1.38807019,1.850220317,0],
+# 	[3.06407232,3.005305973,0],
+# 	[7.627531214,2.759262235,1],
+# 	[5.332441248,2.088626775,1],
+# 	[6.922596716,1.77106367,1],
+# 	[8.675418651,-0.242068655,1],
+# 	[7.673756466,3.508563011,1]]
 
-data = pd.read_csv("../wdbc.csv", index_col=0)
+# data = pd.read_csv("../wdbc.csv", index_col=0)
+data = pd.read_csv("../iris.csv")
 num = 0
-max_val, min_val = [0 for i in range(30)], [0 for i in range(30)]
+max_val, min_val = [0 for i in range(4)], [0 for i in range(4)]
+# max_val, min_val = [0 for i in range(30)], [0 for i in range(30)]
 for i in data:
     if(i != 'class'):
-        if(num == 30):
+        if(num == 4):
             break
         max_val[num] = max(data[i])
         min_val[num] = min(data[i])
@@ -127,17 +129,27 @@ for j in ID:
     data_key.append(format_data)
 
 num_inputs = len(data_key[0]) 
-num_outputs = len(set([row[-1] for row in data_key]))
 print(num_inputs)
 
+# num_outputs = len(set([row[-1] for row in data_key]))
+num_outputs = len(set(data['class']))
+
+print(data_key)
 
 
 
 
 for i in range(len(data_key)):
-    class_val = data_key[i][0]
-    del data_key[i][0]
-    data_key[i].append(1 if class_val == 'M' else 0)
+    class_val = data_key[i][-1]
+    del data_key[i][-1]
+    # del data_key[i][0]
+    # data_key[i].append(1 if class_val == 'M' else 0)
+    if(class_val == 'Iris-setosa'):
+        data_key[i].append(0)
+    elif(class_val == 'Iris-versicolor'):
+        data_key[i].append(1)
+    elif(class_val == 'Iris-virginica'):
+        data_key[i].append(2)
 
 print(data_key[0])
 # print(max_val)
@@ -150,20 +162,23 @@ for i in range(len(data_key)-1):
 print("After Normalized")
 print(data_key[0])
 
-
-num_inputs = len(data_key[0]) 
-num_outputs = len(set([row[-1] for row in data_key]))
-# print(num_inputs)
-# print(num_outputs)
+for i in range(51):
+    print(data_key[i])
+# num_inputs = len(data_key[0]) 
+# num_outputs = len(set([row[-1] for row in data_key]))
+print("Number of Input Layer: ", num_inputs)
+print("Number of Output Layer: ", num_outputs)
 # seed(1)
-network = NeuralNetwork(num_inputs, 3, num_outputs)
-network.training(data_key, 0.5, 5000, num_outputs)
-print("\n\nModel")
-print(network.network)
 
-for row in data_key:
-    prediction = network.predict(row)
-    print("Expect=%d  Output=%d" % (row[-1], prediction))
+
+# network = NeuralNetwork(num_inputs, 10, num_outputs)
+# network.training(data_key, 0.01, 5000, num_outputs)
+# print("\n\nModel")
+# print(network.network)
+
+# for row in data_key:
+#     prediction = network.predict(row)
+#     print("Expect=%d  Output=%d" % (row[-1], prediction))
 
 # B   M
 #[_   _]
