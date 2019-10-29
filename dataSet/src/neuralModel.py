@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
 from random import random
+from random import randint
 import math
 from random import seed
+from random import shuffle
+
 
 class NeuralNetwork:
     def __init__(self, inputs, hiddens, outputs):
@@ -18,11 +21,13 @@ class NeuralNetwork:
         self.inputs = []
         self.data = []
         self.best_network = []
+        self.testing = []
 
-    def compute_net_input(self, weight, input):
+    def compute_net_input(self, weight, inputs):
         net_input = 0
+     
         for i in range(len(weight)):
-            net_input += weight[i]*input[i]
+            net_input += weight[i]*inputs[i]
         return net_input
 
     def sigmoid(self, net_input):
@@ -73,10 +78,25 @@ class NeuralNetwork:
                     neuron['weights'][j] += learn_rate * neuron['errors'] * inputs[j]
                 neuron['weights'][-1] += learn_rate * neuron['errors']
 
-    def training(self, dataset, learn_rate, num_iteration, num_output):
+    def training(self, dataset, learn_rate, num_iteration, num_output, start_index):
+        testing = []
+        training = []
+        for i in range(5):
+            testing.append(start_index+i)
+            testing.append(start_index+50+i)
+            testing.append(start_index+100+i)
+
+        for i in range(len(data_key)):
+            if i not in testing:
+                training.append(data_key[i])
+            else:
+                self.testing.append(data_key[i])
+        
         for iterate in range(num_iteration):
             sum_error = 0
-            for row in dataset:
+            
+
+            for row in training:
                 self.forward_propagate(row)
                 expected = [0 for i in range(num_output)]
                 expected[row[-1]] = 1
@@ -90,8 +110,9 @@ class NeuralNetwork:
             print('iteration=%d   learning_rate=%.4f   error=%.4f' % (iterate, learn_rate, sum_error))
 
     def predict(self, row):
+        
         self.forward_propagate(row)
-        print(self.inputs)
+      
         return self.inputs.index(max(self.inputs))
     
 normalized = lambda x, maxv, minv : (x-minv*0.95)/(maxv*1.05-minv*0.95)
@@ -155,7 +176,7 @@ print(data_key[0])
 # print(max_val)
 # print(min_val[0])
 
-for i in range(len(data_key)-1):
+for i in range(len(data_key)):
     for j in range(len(max_val)):
         
         data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
@@ -170,15 +191,33 @@ print("Number of Input Layer: ", num_inputs)
 print("Number of Output Layer: ", num_outputs)
 # seed(1)
 
+shuffle(data_key)
 
+
+networks = []
+accuracy = []
 # network = NeuralNetwork(num_inputs, 10, num_outputs)
-# network.training(data_key, 0.01, 5000, num_outputs)
-# print("\n\nModel")
-# print(network.network)
+for i in range(10):
+    networks.append(NeuralNetwork(num_inputs, 10, num_outputs))
+    networks[i].training(data_key, 0.1, 500, num_outputs, 5*i)
+    
+    num = 0
+    for row in networks[i].testing:
+        prediction = networks[i].predict(row)
+        if row[-1] == prediction:
+            num += 1
+        print("Expect=%d  Output=%d" % (row[-1], prediction))
+    accuracy.append(num/15*100)
 
-# for row in data_key:
-#     prediction = network.predict(row)
-#     print("Expect=%d  Output=%d" % (row[-1], prediction))
+
+for i in range(10):
+    print("Model ", i)
+    print(networks[i].network, end='\n\n')
+    print("Accuracy : ", accuracy[i])
+
+print("Mean Accuracy: " ,sum(accuracy)/10)
+  
+    
 
 # B   M
 #[_   _]
