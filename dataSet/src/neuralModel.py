@@ -6,23 +6,22 @@ import math
 from random import seed
 from random import shuffle
 
-
 class NeuralNetwork:
-    def __init__(self, inputs, hiddens, outputs):
-        print(inputs)
+    def __init__(self, inputs, hiddens, outputs, w1, w2):
+   
         self.n_input = inputs
         self.n_hidden = hiddens
         self.n_output = outputs
         self.network = []
-        hidden_layer = [{'weights':[random() for i in range(self.n_input)]} for i in range(self.n_hidden)] #random from num of inputlayer and hiddenlayer (input * hidden)
+        hidden_layer = w1 #random from num of inputlayer and hiddenlayer (input * hidden)
         self.network.append(hidden_layer)
-        output_layer = [{'weights':[random() for i in range(self.n_hidden)]} for i in range(self.n_output)]
+        output_layer = w2
         self.network.append(output_layer)
         self.inputs = []
         self.data = []
         self.best_network = []
         self.testing = []
-
+        
     def compute_net_input(self, weight, inputs):
         net_input = 0
      
@@ -78,19 +77,23 @@ class NeuralNetwork:
                     neuron['weights'][j] += learn_rate * neuron['errors'] * inputs[j]
                 neuron['weights'][-1] += learn_rate * neuron['errors']
 
-    def training(self, dataset, learn_rate, num_iteration, num_output, start_index):
-        testing = []
+    def training(self, dataset, learn_rate, num_iteration, num_output, tenflow_iterate):
+        number_testing = [35*(tenflow_iterate+1), 21*(tenflow_iterate+1)] if tenflow_iterate != 9 else [7+(35*(tenflow_iterate+1)), 2+(21*(tenflow_iterate+1))]
+        testing = [[x for x in range(35*tenflow_iterate, number_testing[0])], [x for x in range(21*tenflow_iterate, number_testing[1])]]
         training = []
-        for i in range(5):
-            testing.append(start_index+i)
-            testing.append(start_index+50+i)
-            testing.append(start_index+100+i)
+   
+        for i in range(num_output):
+#             for i in range(3):
+#                 testing.append(start_index+i)
+#                 testing.append(start_index+50+i)
+#                 testing.append(start_index+100+i)
 
-        for i in range(len(data_key)):
-            if i not in testing:
-                training.append(data_key[i])
-            else:
-                self.testing.append(data_key[i])
+            for j in range(len(dataset[i])):
+                if j not in testing[i]:
+                    training.append(dataset[i][j])
+                else:
+                    self.testing.append(dataset[i][j])
+                   
         
         for iterate in range(num_iteration):
             sum_error = 0
@@ -114,25 +117,15 @@ class NeuralNetwork:
         self.forward_propagate(row)
       
         return self.inputs.index(max(self.inputs))
-    
+
 normalized = lambda x, maxv, minv : (x-minv*0.95)/(maxv*1.05-minv*0.95)
 
-# dataset = [[2.7810836,2.550537003,0],
-# 	[1.465489372,2.362125076,0],
-# 	[3.396561688,4.400293529,0],
-# 	[1.38807019,1.850220317,0],
-# 	[3.06407232,3.005305973,0],
-# 	[7.627531214,2.759262235,1],
-# 	[5.332441248,2.088626775,1],
-# 	[6.922596716,1.77106367,1],
-# 	[8.675418651,-0.242068655,1],
-# 	[7.673756466,3.508563011,1]]
-
 data = pd.read_csv("../wdbc.csv", index_col=0)
-# data = pd.read_csv("../iris.csv")
+
 num = 0
-# max_val, min_val = [0 for i in range(4)], [0 for i in range(4)]
+
 max_val, min_val = [0 for i in range(30)], [0 for i in range(30)]
+
 for i in data:
     if(i != 'class'):
         if(num == 30):
@@ -149,85 +142,67 @@ for j in ID:
         format_data.append(data[i][j])
     data_key.append(format_data)
 
-
+num_hidden = 10
 num_inputs = len(data_key[0])-1 
-print(num_inputs)
 
-# num_outputs = len(set([row[-1] for row in data_key]))
 num_outputs = len(set(data['class']))
-
-# print(data_key)
-
-
-
+print(num_inputs, num_outputs)
 
 for i in range(len(data_key)):
     class_val = data_key[i][0]
-    # del data_key[i][-1]
     del data_key[i][0]
     data_key[i].append(1 if class_val == 'M' else 0)
-    # if(class_val == 'Iris-setosa'):
-    #     data_key[i].append(0)
-    # elif(class_val == 'Iris-versicolor'):
-    #     data_key[i].append(1)
-    # elif(class_val == 'Iris-virginica'):
-    #     data_key[i].append(2)
 
-
-# print(max_val)
-# print(min_val[0])
+#tenflow 35 and 21 and last iteration is 42 and 23
 
 for i in range(len(data_key)):
     for j in range(len(max_val)):
         
         data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
-print("After Normalized")
 
-
-# for i in range(51):
-#     print(data_key[i])
-# num_inputs = len(data_key[0]) 
-# num_outputs = len(set([row[-1] for row in data_key]))
 print("Number of Input Layer: ", num_inputs)
 print("Number of Output Layer: ", num_outputs)
-# seed(1)
+
 
 print(data_key[0])
 shuffle(data_key)
-print(data_key[0])
-num0, num1 = 0, 0
+input_data = [[] for _ in range(num_outputs)]
 for i in data_key:
-    if(i[-1] == 0):
-        num0+=1
+    if i[-1] == 0:
+        input_data[0].append(i)
     else:
-        num1+=1
+        input_data[1].append(i)
+print(len(input_data[0]), len(input_data[1]))
 
-print(num0)
-print(num1)
 networks = []
 accuracy = []
-# network = NeuralNetwork(num_inputs, 10, num_outputs)
-# for i in range(10):
-#     networks.append(NeuralNetwork(num_inputs, 10, num_outputs))
-#     networks[i].training(data_key, 0.1, 500, num_outputs, 5*i)
+
+weight1 = [{'weights':[random() for i in range(num_inputs)]} for i in range(num_hidden)]
+weight2 = [{'weights':[random() for i in range(num_hidden)]} for i in range(num_outputs)]
+
+for i in range(10):
+    networks.append(NeuralNetwork(num_inputs, num_hidden, num_outputs, weight1, weight2))
+    networks[i].training(input_data, 0.1, 500, num_outputs, i)
+
     
-#     num = 0
-#     for row in networks[i].testing:
-#         prediction = networks[i].predict(row)
-#         if row[-1] == prediction:
-#             num += 1
-#         print("Expect=%d  Output=%d" % (row[-1], prediction))
-#     accuracy.append(num/15*100)
+    num = 0
+    for row in networks[i].testing:
+        print("this is test: "), len(networks[i].testing)
+        
+        prediction = networks[i].predict(row)
+        if row[-1] == prediction:
+            num += 1
+        print("Expect=%d  Output=%d" % (row[-1], prediction))
+    if i != 9:
+        accuracy.append(num/56*100)
+    else :
+        accuracy.append(num/65*100)
 
+print(accuracy)
 
-# for i in range(10):
-#     print("Model ", i)
-#     print(networks[i].network, end='\n\n')
-#     print("Accuracy : ", accuracy[i])
+for i in range(10):
+    print("Model ", i)
+    # print(networks[i].network, end='\n\n')
+    print("Accuracy : ", accuracy[i])
 
-# print("Mean Accuracy: " ,sum(accuracy)/10)
-  
-    
-
-# B   M
-#[_   _]
+print("Mean Accuracy: " ,sum(accuracy)/10)
