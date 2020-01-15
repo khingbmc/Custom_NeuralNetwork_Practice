@@ -77,9 +77,22 @@ class NeuralNetwork:
                     neuron['weights'][j] += learn_rate * neuron['errors'] * inputs[j]
                 neuron['weights'][-1] += learn_rate * neuron['errors']
 
-    def training(self, dataset, learn_rate, num_iteration, num_output, tenflow_iterate):
-        number_testing = [35*(tenflow_iterate+1), 21*(tenflow_iterate+1)] if tenflow_iterate != 9 else [7+(35*(tenflow_iterate+1)), 2+(21*(tenflow_iterate+1))]
-        testing = [[x for x in range(35*tenflow_iterate, number_testing[0])], [x for x in range(21*tenflow_iterate, number_testing[1])]]
+    def training(self, dataset, learn_rate, num_iteration, num_output, tenflow_iterate, num_training, num_each_group):
+        number_testing = num_training
+        testing = []
+        for i in num_training:
+            if(tenflow_iterate != 9):
+                testing.append([x for x in range(i*tenflow_iterate, i*(tenflow_iterate+1))])
+                print("eieieieiei")
+                print(i*(tenflow_iterate))
+                print(i*(tenflow_iterate+1))
+                
+            else:
+                testing.append([x for x in range(num_each_group[num_training.index(i)]-i, num_each_group[num_training.index(i)])])
+                print("eieieieiei")
+                print(i*(tenflow_iterate))
+                print(num_each_group[num_training.index(i)])
+
         training = []
    
         for i in range(num_output):
@@ -103,7 +116,7 @@ class NeuralNetwork:
                 self.forward_propagate(row)
                 expected = [0 for i in range(num_output)]
                 expected[row[-1]] = 1
-                # print("this is expect ", expected)
+                print("this is expect ", expected[i])
 
                 sum_error += sum([(expected[i] - self.inputs[i])**2 for i in range(len(expected))])
                 
@@ -118,91 +131,5 @@ class NeuralNetwork:
       
         return self.inputs.index(max(self.inputs))
 
-normalized = lambda x, maxv, minv : (x-minv*0.95)/(maxv*1.05-minv*0.95)
-
-data = pd.read_csv("../wdbc.csv", index_col=0)
-
-num = 0
-
-max_val, min_val = [0 for i in range(30)], [0 for i in range(30)]
-
-for i in data:
-    if(i != 'class'):
-        if(num == 30):
-            break
-        max_val[num] = max(data[i])
-        min_val[num] = min(data[i])
-        num += 1
-
-ID = data.index.values
-data_key = []
-for j in ID:
-    format_data = []
-    for i in data:
-        format_data.append(data[i][j])
-    data_key.append(format_data)
-
-num_hidden = 10
-num_inputs = len(data_key[0])-1 
-
-num_outputs = len(set(data['class']))
-print(num_inputs, num_outputs)
-
-for i in range(len(data_key)):
-    class_val = data_key[i][0]
-    del data_key[i][0]
-    data_key[i].append(1 if class_val == 'M' else 0)
-
-#tenflow 35 and 21 and last iteration is 42 and 23
-
-for i in range(len(data_key)):
-    for j in range(len(max_val)):
-        
-        data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
-
-print("Number of Input Layer: ", num_inputs)
-print("Number of Output Layer: ", num_outputs)
 
 
-print(data_key[0])
-shuffle(data_key)
-input_data = [[] for _ in range(num_outputs)]
-for i in data_key:
-    if i[-1] == 0:
-        input_data[0].append(i)
-    else:
-        input_data[1].append(i)
-print(len(input_data[0]), len(input_data[1]))
-
-networks = []
-accuracy = []
-
-weight1 = [{'weights':[random() for i in range(num_inputs)]} for i in range(num_hidden)]
-weight2 = [{'weights':[random() for i in range(num_hidden)]} for i in range(num_outputs)]
-
-for i in range(10):
-    networks.append(NeuralNetwork(num_inputs, num_hidden, num_outputs, weight1, weight2))
-    networks[i].training(input_data, 0.1, 500, num_outputs, i)
-
-    
-    num = 0
-    for row in networks[i].testing:
-        print("this is test: "), len(networks[i].testing)
-        
-        prediction = networks[i].predict(row)
-        if row[-1] == prediction:
-            num += 1
-        print("Expect=%d  Output=%d" % (row[-1], prediction))
-    if i != 9:
-        accuracy.append(num/56*100)
-    else :
-        accuracy.append(num/65*100)
-
-print(accuracy)
-
-for i in range(10):
-    print("Model ", i)
-    # print(networks[i].network, end='\n\n')
-    print("Accuracy : ", accuracy[i])
-
-print("Mean Accuracy: " ,sum(accuracy)/10)
