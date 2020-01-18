@@ -1,6 +1,6 @@
 import pandas as pd
 from random import shuffle
-from neuralModel import NeuralNetwork
+from test_iris_neural import TestNeural
 from sklearn.utils import shuffle
 from random import random
 from random import randint
@@ -52,10 +52,28 @@ def main(dataname, num_inputs, num_hiddens, learning_rate):
             
             data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
 
-    networks = []
+    input_data = [[] for _ in range(num_outputs)]
+    for i in data_key:
+        input_data[i[-1]].append(i)
+   
+   
+    num_data = 0
+    num_each_group = []
+    for i in range(len(input_data)):
+       num_data += len(input_data[i])
+       num_each_group.append(len(input_data[i]))
+
     accuracy = []
 
-    weight1 = [{'weights':[random() for i in range(num_inputs)]} for i in range(num_hiddens)]
-    weight2 = [{'weights':[random() for i in range(num_hiddens)]} for i in range(num_outputs)]
+    weight1 = [{'weights':[0.5 for i in range(num_inputs)]} for i in range(num_hiddens)]
+    weight2 = [{'weights':[0.5 for i in range(num_hiddens)]} for i in range(num_outputs)]
+    networks = []
+    for i in range(num_outputs):
+        networks.append(TestNeural(num_inputs, num_hiddens, num_outputs, i))
+        networks[i].training(input_data[i], learning_rate, 500, num_outputs)
+        print(networks[i].network)
+    # networks = TestNeural(num_inputs, num_hiddens, num_outputs, weight1, weight2)
+    # num_training_each_group = [50, 50, 50]
+    # networks.training(input_data, learning_rate, 500, num_outputs, 0, num_training_each_group, num_each_group)
     
 main(input("Type File csv name: "), int(input("Type number of attribute in data: ")), int(input("Type node number of hidden layers: ")), float(input("Type learning rate: ")))
