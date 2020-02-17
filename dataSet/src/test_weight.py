@@ -36,7 +36,6 @@ def main(dataname, num_inputs, num_hiddens, learning_rate):
 
     # print(data_key)
 
-
     num_outputs = len(set(data['class']))
 
     class_set = list(set(data['class']))
@@ -52,9 +51,11 @@ def main(dataname, num_inputs, num_hiddens, learning_rate):
             
             data_key[i][j] = normalized(data_key[i][j], max_val[j], min_val[j])
 
-    input_data = [[] for _ in range(num_outputs)]
+
+    # input_data = [[] for _ in range(num_outputs)]
+    input_data = []
     for i in data_key:
-        input_data[i[-1]].append(i)
+        input_data.append(i)
    
    
     num_data = 0
@@ -65,15 +66,43 @@ def main(dataname, num_inputs, num_hiddens, learning_rate):
 
     accuracy = []
 
-    weight1 = [{'weights':[0.5 for i in range(num_inputs)]} for i in range(num_hiddens)]
-    weight2 = [{'weights':[0.5 for i in range(num_hiddens)]} for i in range(num_outputs)]
-    networks = []
-    for i in range(num_outputs):
-        networks.append(TestNeural(num_inputs, num_hiddens, num_outputs, i))
-        networks[i].training(input_data[i], learning_rate, 500, num_outputs)
-        print(networks[i].network)
-    # networks = TestNeural(num_inputs, num_hiddens, num_outputs, weight1, weight2)
-    # num_training_each_group = [50, 50, 50]
-    # networks.training(input_data, learning_rate, 500, num_outputs, 0, num_training_each_group, num_each_group)
+# %% init Weight layer 1 and layer w
+    weight1 = [{'weights':[random() for i in range(num_inputs)]} for i in range(num_hiddens)]
     
+    weight2 = []
+    for i in range(3):
+        weight = {'weights':[]}
+        for j in range(5):
+            weight_random = random()
+            weight['weights'].append([weight_random for _ in range(3)])
+        weight2.append(weight)
+        
+# %% init Network and Train
+    
+    testing = []
+
+    
+    for j in range(15):
+        testing.append(input_data[randint(0, 150)])
+    networks = []
+    # for i in range(num_outputs):
+    networks.append(TestNeural(num_inputs, num_hiddens, num_outputs, weight1, weight2))
+    condition = networks[0].training(input_data, learning_rate, 500, num_outputs, testing)
+    c = networks[0].create_condition()
+    
+    for row in networks[0].testing:
+            
+          
+            
+            prediction = networks[0].predict(row)
+            
+            # print("Expect: ", row[-1])
+            print("Expect=%d  Output=%d" % (row[-1], prediction.index(max(prediction))))
+            # print(prediction)
+            
+    print(networks[0].network) 
+            
+    
+        
+  
 main(input("Type File csv name: "), int(input("Type number of attribute in data: ")), int(input("Type node number of hidden layers: ")), float(input("Type learning rate: ")))

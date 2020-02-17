@@ -83,15 +83,11 @@ class NeuralNetwork:
         for i in num_training:
             if(tenflow_iterate != 9):
                 testing.append([x for x in range(i*tenflow_iterate, i*(tenflow_iterate+1))])
-                print("eieieieiei")
-                print(i*(tenflow_iterate))
-                print(i*(tenflow_iterate+1))
+                
                 
             else:
                 testing.append([x for x in range(num_each_group[num_training.index(i)]-i, num_each_group[num_training.index(i)])])
-                print("eieieieiei")
-                print(i*(tenflow_iterate))
-                print(num_each_group[num_training.index(i)])
+                
 
         training = []
    
@@ -116,7 +112,7 @@ class NeuralNetwork:
                 self.forward_propagate(row)
                 expected = [0 for i in range(num_output)]
                 expected[row[-1]] = 1
-                print("this is expect ", expected[i])
+             
 
                 sum_error += sum([(expected[i] - self.inputs[i])**2 for i in range(len(expected))])
                 
