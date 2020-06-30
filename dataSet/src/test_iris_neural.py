@@ -27,9 +27,10 @@ class TestNeural:
         self.condition = [{} for _ in range(self.hiddens)]
         self.check_condition = False
         self.gaussian = []
+        self.checking = False
       
-        file = open("test_iris/init_weight"+".txt", "w")
-        file.write(str(self.network))
+        file = open("test_iris/init_weight"+".txt", "a")
+        file.write(str(self.network)+"\n\n")
         file.close()
         
 
@@ -41,6 +42,7 @@ class TestNeural:
             
      
             if type(weight[i]) == float or type(weight[i]) == np.float64:
+                
                 net_input += weight[i]*inputs[i]
             
             else:
@@ -51,6 +53,7 @@ class TestNeural:
                     for j in range(self.outputs):
                         mean, std = self.condition[i][j]['mean'], self.condition[i][j]['std']
                         gaussian_answer.append(self.gaussian_function(mean, std, inputs[i]))
+                    
                         # gaussian_answer.append(self.condition[i][j](inputs[i]))
                         # self.gaussian.append(self.condition[i][j](inputs[i]))
                         
@@ -92,6 +95,7 @@ class TestNeural:
                    
                     
                 next_inputs.append(self.network[layer][neuron]['output'])
+               
             self.inputs = next_inputs
         
 
@@ -108,8 +112,10 @@ class TestNeural:
                     error = 0.0
                     for neuron in self.network[i + 1]:
                         if type(neuron['weights'][j]) == float or type(neuron['weights'][j]) == np.float64:
+                            self.checking = True
                             error += neuron['weights'][j] * neuron['errors']
                         else:
+                         
                             error += neuron['weights'][j][self.num_class] * neuron['errors']
                     errors.append(error)
             else:
@@ -121,13 +127,15 @@ class TestNeural:
                 neuron['errors'] = errors[j] * self.transfer_derivative(neuron['output'])
 
     def update_weights(self, learn_rate):
+
         for i in range(len(self.network)):
             inputs = self.data[:-1]
-            # print(inputs)
             if i != 0:
                 inputs = [neuron['output'] for neuron in self.network[i - 1]]
+            # print(inputs)
             for neuron in self.network[i]:
                 for j in range(len(inputs)):
+                 
                     if type(neuron['weights'][j]) == float or type(neuron['weights'][j]) == np.float64:
                         neuron['weights'][j] += learn_rate * neuron['errors'] * inputs[j]
                         neuron['weights'][-1] += learn_rate * neuron['errors']
@@ -149,7 +157,7 @@ class TestNeural:
                 if iterate != num_iteration:
                     expected = [0 for i in range(num_output)]
                     expected[row[-1]] = 1
-                    # print("this is expect ", expected)
+                    
     
                     sum_error += sum([(expected[i] - self.inputs[i])**2 for i in range(len(expected))])
                     
@@ -157,29 +165,26 @@ class TestNeural:
                     self.update_weights(learn_rate)
            
             if iterate != num_iteration:
-                print('iteration=%d   learning_rate=%.4f   error=%.4f' % (iterate, learn_rate, sum_error))
+                print('iteration=%d   learning_rate=%.4f   rmse=%.4f' % (iterate, learn_rate, math.sqrt(sum_error)))
         
-        file = open("test_iris/end_weight"+".txt", "w")
-        file.write(str(self.network))
+        file = open("test_iris/end_weight"+".txt", "a")
+        file.write(str(self.network)+"\n\n")
         file.close()
         return self.check_all_weight
     
     def create_condition(self):
-        print("this is check all weight")
-        print(self.check_all_weight, end = '\n\n\n')
+      
         for i in range(len(self.check_all_weight)):
             for j in range(len(self.check_all_weight[i])):
-                print(i ,j)
-                print(self.check_all_weight[i][j]['output'])
+              
                 mean = statistics.mean(self.check_all_weight[i][j]['output'])
                 std = statistics.stdev(self.check_all_weight[i][j]['output'], xbar=mean) 
-                print("Mean Std")
-                print(mean, std, end='\n\n\n')
+              
                 self.condition[j][i] = {'mean':mean, 'std':std}
                 
         self.check_condition = True
         self.iteration = 0
-        print(self.check_all_weight)
+       
         return self.condition
     
     def predict(self, row):
