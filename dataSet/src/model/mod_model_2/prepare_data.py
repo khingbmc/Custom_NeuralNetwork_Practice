@@ -8,7 +8,7 @@ from random import random
 from random import randint
 
 # Neural Model Class
-from Mod_Neural_Model import NeuralModel
+from Modify_Neural_Network import NeuralModel
 
 
 
@@ -100,8 +100,19 @@ def prepareData(num_inputs, number_node_hidden, learning_rate, number_of_iterate
             weight['weights'].append(sub_weight)
         weight1.append(weight)
     # weight in layer 2 is multi-weight / connection
-    # weight2 = [{'weights':[{'base': random()} for i in range(number_node_hidden)]} for i in range(num_outputs)]
-    weight2 = [{'weights':[random() for i in range(number_node_hidden)]} for i in range(num_outputs)]
+    weight2 = []
+    # nm_weight2 = []
+    for i in range(num_outputs):
+        weight = {'weights':[]}
+        # nm_weight = {'weights':[]}
+        for j in range(num_hiddens):
+            weight_random = random()
+            weight['weights'].append([weight_random for _ in range(num_outputs)])
+            # nm_weight['weights'].append(weight_random)
+        # nm_weight2.append(nm_weight)
+        weight2.append(weight)
+    # weight2 = [{'weights':[{'default': random()} for i in range(number_node_hidden)]} for i in range(num_outputs)]
+    # weight2 = [{'weights':[random() for i in range(number_node_hidden)]} for i in range(num_outputs)]
 
 # %% Model part
     network = NeuralModel(num_inputs, number_node_hidden, num_outputs, weight1, weight2)
